@@ -1,9 +1,13 @@
 package api
 
-import "net/http"
+import (
+	"net/http"
+
+	"github.com/DevKayoS/goBid/internal/utils"
+)
 
 func (api *Api) handleSignupUser(w http.ResponseWriter, r *http.Request) {
-	panic("TODO - NOT IMPLEMENT")
+	data, problems, err := utils.DecodeValidJson[CreateUserRequest]()
 }
 
 func (api *Api) handleLoginUser(w http.ResponseWriter, r *http.Request) {
