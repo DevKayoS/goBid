@@ -2,18 +2,25 @@ package main
 
 import (
 	"context"
+	"encoding/gob"
 	"fmt"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/DevKayoS/goBid/internal/api"
 	"github.com/DevKayoS/goBid/internal/services"
+	"github.com/alexedwards/scs/pgxstore"
+	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi/v5"
+	"github.com/google/uuid"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
 
 func main() {
+	gob.Register(uuid.UUID{})
+
 	if err := godotenv.Load(); err != nil {
 		panic(err)
 	}
@@ -37,9 +44,16 @@ func main() {
 		panic(err)
 	}
 
+	sessions := scs.New()
+	sessions.Store = pgxstore.New(pool)
+	sessions.Lifetime = 24 * time.Hour
+	sessions.Cookie.HttpOnly = true
+	sessions.Cookie.SameSite = http.SameSiteLaxMode // so seja possivel usar o cookie no mesmo site de origem
+
 	api := api.Api{
 		Router:      chi.NewMux(),
 		UserService: services.NewUserService(pool),
+		Sessions:    sessions,
 	}
 
 	api.BindRoutes()
