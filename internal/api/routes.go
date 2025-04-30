@@ -29,6 +29,9 @@ func (api *Api) BindRoutes() {
 				r.With(api.AuthMiddleware).Post("/logout", api.handleLogoutUser)
 			})
 
+			r.Route("/products", func(r chi.Router) {
+				r.Post("/", api.handleCreateProduct)
+			})
 		})
 	})
 }
