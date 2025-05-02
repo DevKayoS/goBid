@@ -19,7 +19,16 @@ type CreateProductRequest struct {
 func (req CreateProductRequest) Valid(ctx context.Context) validator.Evaluator {
 	var eval validator.Evaluator
 	// TODO - terminar a validcao
-	// eval.CheckField()
+	eval.CheckField(validator.NotBlank(req.ProductName), "product_name", "this field cannot be blank")
+	eval.CheckField(validator.NotBlank(req.Description), "description", "this field cannot be blank")
+
+	eval.CheckField(
+		validator.MinChars(req.Description, 10) &&
+			validator.MaxChars(req.Description, 255),
+		"description", "this field must have a length between 10 and 255",
+	)
+
+	eval.CheckField()
 
 	return eval
 }
