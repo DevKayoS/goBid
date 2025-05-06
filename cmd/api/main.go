@@ -51,9 +51,10 @@ func main() {
 	sessions.Cookie.SameSite = http.SameSiteLaxMode // so seja possivel usar o cookie no mesmo site de origem
 
 	api := api.Api{
-		Router:      chi.NewMux(),
-		UserService: services.NewUserService(pool),
-		Sessions:    sessions,
+		Router:         chi.NewMux(),
+		UserService:    services.NewUserService(pool),
+		Sessions:       sessions,
+		ProductService: services.NewProductService(pool),
 	}
 
 	api.BindRoutes()
