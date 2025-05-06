@@ -38,8 +38,9 @@ func (api *Api) BindRoutes() {
 					r.Use(api.AuthMiddleware)
 					r.Post("/", api.handleCreateProduct)
 					r.Get("/list", api.handleListAvailableProduct)
-				})
 
+					r.Get("/ws/subscriber/{product_Id}", api.handleSubscribeUserToAuction)
+				})
 			})
 
 		})

@@ -14,6 +14,7 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-chi/chi/v5"
 	"github.com/google/uuid"
+	"github.com/gorilla/websocket"
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/joho/godotenv"
 )
@@ -56,6 +57,9 @@ func main() {
 		Sessions:       sessions,
 		ProductService: services.NewProductService(pool),
 		BidService:     services.NewBidsServices(pool),
+		WsUpgrader: websocket.Upgrader{
+			CheckOrigin: func(r *http.Request) bool { return true }, // ONLY DEV
+		},
 	}
 
 	api.BindRoutes()
