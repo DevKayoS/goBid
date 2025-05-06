@@ -36,3 +36,13 @@ func (ps *ProductService) CreateProduct(ctx context.Context, sellerId uuid.UUID,
 
 	return id, nil
 }
+
+func (ps *ProductService) ListAvailableProducts(ctx context.Context) ([]pgstore.Product, error) {
+	products, err := ps.queries.ListAvailableProducts(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return products, nil
+}

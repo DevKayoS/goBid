@@ -31,6 +31,7 @@ func (api *Api) BindRoutes() {
 
 			r.With(api.AuthMiddleware).Route("/products", func(r chi.Router) {
 				r.Post("/", api.handleCreateProduct)
+				r.Get("/list", api.handleListProduct)
 			})
 
 		})

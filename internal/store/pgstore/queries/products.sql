@@ -8,3 +8,5 @@ INSERT INTO products (
 ) VALUES ($1, $2, $3, $4, $5)
 RETURNING id;
 
+-- name: ListAvailableProducts :many
+SELECT * FROM products WHERE auction_end >= NOW() and is_sold = false;

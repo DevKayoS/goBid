@@ -48,3 +48,20 @@ func (api *Api) handleCreateProduct(w http.ResponseWriter, r *http.Request) {
 	return
 
 }
+
+func (api *Api) handleListProduct(w http.ResponseWriter, r *http.Request) {
+	products, err := api.ProductService.ListAvailableProducts(r.Context())
+
+	if err != nil {
+		utils.EncodeJson(w, r, http.StatusInternalServerError, map[string]any{
+			"error": "unexpected error, try again later",
+		})
+		return
+	}
+
+	utils.EncodeJson(w, r, http.StatusOK, map[string]any{
+		"msg":  "generated product list with successfuly",
+		"data": products,
+	})
+
+}
