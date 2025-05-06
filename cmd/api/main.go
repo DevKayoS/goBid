@@ -55,6 +55,7 @@ func main() {
 		UserService:    services.NewUserService(pool),
 		Sessions:       sessions,
 		ProductService: services.NewProductService(pool),
+		BidService:     services.NewBidsServices(pool),
 	}
 
 	api.BindRoutes()

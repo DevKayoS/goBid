@@ -41,7 +41,7 @@ func (ps *ProductService) ListAvailableProducts(ctx context.Context) ([]pgstore.
 	products, err := ps.queries.ListAvailableProducts(ctx)
 
 	if err != nil {
-		return nil, err
+		return []pgstore.Product{}, err
 	}
 
 	return products, nil

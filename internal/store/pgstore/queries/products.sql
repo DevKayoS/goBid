@@ -10,3 +10,7 @@ RETURNING id;
 
 -- name: ListAvailableProducts :many
 SELECT * FROM products WHERE auction_end >= NOW() and is_sold = false;
+
+-- name: GetProductById :one
+SELECT * FROM products
+WHERE id = $1;

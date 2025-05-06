@@ -49,7 +49,7 @@ func (api *Api) handleCreateProduct(w http.ResponseWriter, r *http.Request) {
 
 }
 
-func (api *Api) handleListProduct(w http.ResponseWriter, r *http.Request) {
+func (api *Api) handleListAvailableProduct(w http.ResponseWriter, r *http.Request) {
 	products, err := api.ProductService.ListAvailableProducts(r.Context())
 
 	if err != nil {
