@@ -14,4 +14,5 @@ type Api struct {
 	ProductService services.ProductService
 	BidService     services.BidServices
 	WsUpgrader     websocket.Upgrader
+	AuctionLobby   services.AuctionLobby
 }
