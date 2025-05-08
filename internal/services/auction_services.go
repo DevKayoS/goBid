@@ -2,6 +2,7 @@ package services
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/google/uuid"
@@ -32,6 +33,32 @@ type AuctionRoom struct {
 	Unregister  chan *Client
 	Clients     map[uuid.UUID]*Client
 	BidServices *BidServices
+}
+
+func (room *AuctionRoom) Run() {
+	defer func() {
+		close(room.Broadcast)
+		close(room.Register)
+		close(room.Unregister)
+	}()
+
+	for {
+		select {
+		case client := <-room.Register:
+			continue // r.RegisterClient(client)
+		case client := <-room.Unregister:
+			continue // room.UnregisterClient(client)
+		case message := <-room.Broadcast:
+			continue // room.BroadCastMessage(message)
+		case <-room.Context.Done():
+			fmt.Println("Auction ending")
+			// notificar usuarios que o leilao acabou
+		}
+	}
+}
+
+func (room *AuctionRoom) RegisterClient(client *Client) {
+
 }
 
 func NewAuctionRoom(ctx context.Context, BidService BidServices, id uuid.UUID) *AuctionRoom {
