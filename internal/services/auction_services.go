@@ -2,7 +2,8 @@ package services
 
 import (
 	"context"
-	"fmt"
+	"errors"
+	"log/slog"
 	"sync"
 
 	"github.com/google/uuid"
@@ -12,12 +13,25 @@ import (
 type MessageKind int
 
 const (
+	// Request
 	PlaceBid MessageKind = iota
+
+	// Ok/sucess
+	SuccessfullyPlaceBid
+
+	// Errors
+	FailedToPlaceBid
+
+	//info
+	NewBidPlace
+	AuctionFinished
 )
 
 type Message struct {
 	Message string
 	Kind    MessageKind
+	UserId  uuid.UUID
+	Amount  float64
 }
 
 type AuctionLobby struct {
@@ -45,20 +59,57 @@ func (room *AuctionRoom) Run() {
 	for {
 		select {
 		case client := <-room.Register:
-			continue // r.RegisterClient(client)
+			room.registerClient(client)
 		case client := <-room.Unregister:
-			continue // room.UnregisterClient(client)
+			room.unregisterClient(client)
 		case message := <-room.Broadcast:
-			continue // room.BroadCastMessage(message)
+			room.broadCastMessage(message)
 		case <-room.Context.Done():
-			fmt.Println("Auction ending")
-			// notificar usuarios que o leilao acabou
+			slog.Info("Auction has ended", "auctionId", room.Id)
+			for _, client := range room.Clients {
+				client.Send <- Message{Kind: AuctionFinished, Message: "ayctuin has been finished"}
+			}
+			return
 		}
 	}
 }
 
-func (room *AuctionRoom) RegisterClient(client *Client) {
+func (room *AuctionRoom) registerClient(client *Client) {
+	slog.Info("New User Connected", "Client", client)
+	room.Clients[client.UserId] = client
+}
 
+func (room *AuctionRoom) unregisterClient(client *Client) {
+	slog.Info("User disconnected", "Client", client)
+	delete(room.Clients, client.UserId)
+}
+
+func (room *AuctionRoom) broadCastMessage(message Message) {
+	slog.Info("New message recieved", "RoomId", room.Id, "message", message.Message, "user_Id", message.UserId)
+	switch message.Kind {
+	case PlaceBid:
+		bid, err := room.BidServices.PlaceBid(room.Context, room.Id, message.UserId, message.Amount)
+		if err != nil {
+			if errors.Is(err, ErrBidIsTooLow) {
+				if client, ok := room.Clients[message.UserId]; ok {
+					client.Send <- Message{Kind: FailedToPlaceBid, Message: ErrBidIsTooLow.Error()}
+				}
+				return
+			}
+		}
+
+		if Client, ok := room.Clients[message.UserId]; ok {
+			Client.Send <- Message{Kind: SuccessfullyPlaceBid, Message: "Your bid was successfully placed"}
+		}
+
+		for id, client := range room.Clients {
+			newBidMessage := Message{Kind: NewBidPlace, Message: "A new bid was placed", Amount: bid.BidAmount}
+			if id == message.UserId {
+				continue
+			}
+			client.Send <- newBidMessage
+		}
+	}
 }
 
 func NewAuctionRoom(ctx context.Context, BidService BidServices, id uuid.UUID) *AuctionRoom {
@@ -68,7 +119,7 @@ func NewAuctionRoom(ctx context.Context, BidService BidServices, id uuid.UUID) *
 		Register:    make(chan *Client),
 		Unregister:  make(chan *Client),
 		Context:     ctx,
-		BidServices: BidService,
+		BidServices: &BidService,
 	}
 }
 
