@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log/slog"
 	"sync"
+	"time"
 
 	"github.com/google/uuid"
 	"github.com/gorilla/websocket"
@@ -21,6 +22,7 @@ const (
 
 	// Errors
 	FailedToPlaceBid
+	InvalidJSON
 
 	//info
 	NewBidPlace
@@ -28,10 +30,10 @@ const (
 )
 
 type Message struct {
-	Message string
-	Kind    MessageKind
-	UserId  uuid.UUID
-	Amount  float64
+	Message string      `json:"message,omitempty"`
+	Kind    MessageKind `json:"kind"`
+	Amount  float64     `json:"amount,omitempty"`
+	UserId  uuid.UUID   `json:"user_id,omitempty"`
 }
 
 type AuctionLobby struct {
@@ -110,6 +112,14 @@ func (room *AuctionRoom) broadCastMessage(message Message) {
 			}
 			client.Send <- newBidMessage
 		}
+	case InvalidJSON:
+		client, ok := room.Clients[message.UserId]
+		if !ok {
+			slog.Info("Client not found in a hasmap", "user_id", message.UserId)
+			return
+		}
+
+		client.Send <- message
 	}
 }
 
@@ -138,5 +148,45 @@ func NewClient(room *AuctionRoom, conn *websocket.Conn, userId uuid.UUID) *Clien
 		Conn:   conn,
 		UserId: userId,
 		Send:   make(chan Message, 512), // pode receber ate 512 mensagens por vez
+	}
+}
+
+const (
+	MAX_MESSAGE_SIZE = 512
+	READ_DEAD_LINE   = 60 * time.Second // 1 minuto
+)
+
+func (client *Client) ReadEventLoop() {
+	defer func() {
+		client.Room.Unregister <- client
+		client.Conn.Close()
+	}()
+
+	client.Conn.SetReadLimit(MAX_MESSAGE_SIZE)
+	client.Conn.SetReadDeadline(time.Now().Add(READ_DEAD_LINE))
+
+	client.Conn.SetPongHandler(func(string) error {
+		client.Conn.SetReadDeadline(time.Now().Add(READ_DEAD_LINE))
+		return nil
+	})
+
+	for {
+		var message Message
+		message.UserId = client.UserId
+
+		err := client.Conn.ReadJSON(&message)
+		if err != nil {
+			if websocket.IsUnexpectedCloseError(err, websocket.CloseGoingAway, websocket.CloseAbnormalClosure) {
+				slog.Error("Unexpected close error", "error", err)
+			}
+
+			client.Room.Broadcast <- Message{
+				Kind:    InvalidJSON,
+				Message: "this message should be a valid json",
+				UserId:  message.UserId,
+			}
+		}
+
+		client.Room.Broadcast <- message
 	}
 }
