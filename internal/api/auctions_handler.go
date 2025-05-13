@@ -36,11 +36,22 @@ func (api *Api) handleSubscribeUserToAuction(w http.ResponseWriter, r *http.Requ
 		return
 	}
 
-	_, ok := api.Sessions.Get(r.Context(), "AuthenticatedUserId").(uuid.UUID)
+	userId, ok := api.Sessions.Get(r.Context(), "AuthenticatedUserId").(uuid.UUID)
 
 	if !ok {
 		utils.EncodeJson(w, r, http.StatusInternalServerError, map[string]any{
 			"msg": "unexpected error, try again later",
+		})
+		return
+	}
+
+	api.AuctionLobby.Lock()
+	room, ok := api.AuctionLobby.Rooms[productId]
+	api.AuctionLobby.Unlock()
+
+	if !ok {
+		utils.EncodeJson(w, r, http.StatusBadRequest, map[string]any{
+			"msg": "the auction has ended",
 		})
 		return
 	}
@@ -52,6 +63,14 @@ func (api *Api) handleSubscribeUserToAuction(w http.ResponseWriter, r *http.Requ
 		})
 		return
 	}
-	defer conn.Close()
 
+	client := services.NewClient(room, conn, userId)
+
+	room.Register <- client
+	// go client.ReadEventLoop()
+	// go client.WriteEventLoop()
+
+	for {
+
+	}
 }

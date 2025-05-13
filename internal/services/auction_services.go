@@ -50,6 +50,7 @@ type AuctionRoom struct {
 }
 
 func (room *AuctionRoom) Run() {
+	slog.Info("Auction has begun", "auctionId", room.Id)
 	defer func() {
 		close(room.Broadcast)
 		close(room.Register)
@@ -118,6 +119,7 @@ func NewAuctionRoom(ctx context.Context, BidService BidServices, id uuid.UUID) *
 		Broadcast:   make(chan Message),
 		Register:    make(chan *Client),
 		Unregister:  make(chan *Client),
+		Clients:     make(map[uuid.UUID]*Client),
 		Context:     ctx,
 		BidServices: &BidService,
 	}
