@@ -21,7 +21,7 @@ Siga os passos abaixo para rodar o `goBid` localmente.
 
 ### Pré-requisitos
 
-- [Go](https://golang.org/dl/) (versão 1.16 ou superior)
+- [Go](https://golang.org/dl/) (versão 1.24.2 ou superior)
 - [Git](https://git-scm.com/downloads)
 
 ### Instalação
