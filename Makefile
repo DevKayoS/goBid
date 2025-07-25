@@ -23,3 +23,8 @@ create-sg:
 		--port 5432 \
 		--cidr 0.0.0.0/0 \
 		--region $(REGION) || echo "Ingress rule already exists or failed silently."
+
+create-ecr:
+	aws ecr describe-repositories --repository-name $(APP_NAME) --region $(REGION) || \
+	aws ecr create-repository --repository-name $(APP_NAME) --region $(REGION)
+	
