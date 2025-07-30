@@ -1,8 +1,12 @@
 APP_NAME=gobid
 REGION=us-east-1
 VPC_ID=vpc-096fc31bf0f9ef9e0
-SG_NAME=gobid-sg
+
+ACCOUNT_ID=$(shell aws sts get-caller-identity --query Account --output text)
 export AWS_PAGER=
+SG_NAME=$(APP_NAME)-sg
+ECR_URL=$(ACCOUNT_ID).dkr.ecr.$(REGION).amazonaws.com
+REPO_URL=$(ECR_URL)/$(APP_NAME)
 
 create-sg:
 	@if ! aws ec2 describe-security-groups --filters "Name=group-name,Values=$(SG_NAME)" --region $(REGION) --query "SecurityGroups[*].GroupId" --output text | grep -qE 'sg-'; then \
@@ -27,4 +31,14 @@ create-sg:
 create-ecr:
 	aws ecr describe-repositories --repository-name $(APP_NAME) --region $(REGION) || \
 	aws ecr create-repository --repository-name $(APP_NAME) --region $(REGION)
-	
+
+build:
+	docker build -t $(APP_NAME) -f Dockerfile.prod .
+
+tag: build
+	docker tag $(APP_NAME):latest $(REPO_URL):latest
+
+push: tag
+	aws ecr get-login-password --region $(REGION) | \
+	docker login --username AWS --password-stdin $(ECR_URL)
+	docker push $(REPO_URL):latest
