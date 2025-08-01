@@ -67,3 +67,5 @@ create-db:
 		echo "RDS instance $(DB_NAME) already exists."; \
 	fi
 
+health:
+	echo "Teste"
