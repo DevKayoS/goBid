@@ -1,4 +1,6 @@
 -- Write your migrate up statements here
+CREATE EXTENSION IF NOT EXISTS "pgcrypto";
+
 CREATE TABLE IF NOT EXISTS bids (
     id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
     product_Id UUID NOT NULL REFERENCES products (id),

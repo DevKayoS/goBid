@@ -8,6 +8,7 @@ SG_NAME=$(APP_NAME)-sg
 ECR_URL=$(ACCOUNT_ID).dkr.ecr.$(REGION).amazonaws.com
 REPO_URL=$(ECR_URL)/$(APP_NAME)
 DB_NAME=$(APP_NAME)-db 
+GO=$(shell which go)
 
 create-sg:
 	@if ! aws ec2 describe-security-groups --filters "Name=group-name,Values=$(SG_NAME)" --region $(REGION) --query "SecurityGroups[*].GroupId" --output text | grep -qE 'sg-'; then \
@@ -67,5 +68,13 @@ create-db:
 		echo "RDS instance $(DB_NAME) already exists."; \
 	fi
 
-health:
-	echo "Teste"
+migrate:
+	$(GO) run ./cmd/terndotenv/main.go
+
+
+check-db:
+	aws ec2 describe-security-groups \
+	  	--filters "Name=group-name,Values=$(SG_NAME)" \
+  		--region $(REGION) \
+  		--query "SecurityGroups[*].IpPermissions"
+

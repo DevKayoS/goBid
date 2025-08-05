@@ -21,10 +21,8 @@ import (
 
 func main() {
 	gob.Register(uuid.UUID{})
-
-	if err := godotenv.Load(); err != nil {
-		panic(err)
-	}
+	
+	godotenv.Load()
 
 	ctx := context.Background()
 
