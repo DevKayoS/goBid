@@ -21,7 +21,6 @@ import (
 
 func main() {
 	gob.Register(uuid.UUID{})
-	
 	godotenv.Load()
 
 	ctx := context.Background()

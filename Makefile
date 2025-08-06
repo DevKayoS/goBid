@@ -9,6 +9,7 @@ ECR_URL=$(ACCOUNT_ID).dkr.ecr.$(REGION).amazonaws.com
 REPO_URL=$(ECR_URL)/$(APP_NAME)
 DB_NAME=$(APP_NAME)-db 
 GO=$(shell which go)
+ACCESS_ROLE_ARN=arn:aws:iam::738827671264:role/AppRunnerECRAcessRole
 
 create-sg:
 	@if ! aws ec2 describe-security-groups --filters "Name=group-name,Values=$(SG_NAME)" --region $(REGION) --query "SecurityGroups[*].GroupId" --output text | grep -qE 'sg-'; then \
