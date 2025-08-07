@@ -1,0 +1,8 @@
+{
+    "AuthenticationConfiguration": {
+        "AccessRoleArn": "arn:aws:iam::738827671264:role/AppRunnerECRAcessRole"    
+    },
+    "ImageRepository": {
+        "ImageIdentifier": 
+    }
+}

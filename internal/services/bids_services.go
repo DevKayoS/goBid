@@ -25,10 +25,9 @@ func NewBidsServices(pool *pgxpool.Pool) BidServices {
 var ErrBidIsTooLow = errors.New("the bid value is too low")
 
 func (bs *BidServices) PlaceBid(ctx context.Context, product_Id, bidder_Id uuid.UUID, amount float64) (pgstore.Bid, error) {
-	//Amount > previus_amount
-	//Amount > baseprice
+	// Amount > previus_amount
+	// Amount > baseprice
 	product, err := bs.queries.GetProductById(ctx, product_Id)
-
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return pgstore.Bid{}, err
@@ -51,7 +50,6 @@ func (bs *BidServices) PlaceBid(ctx context.Context, product_Id, bidder_Id uuid.
 		BidderID:  bidder_Id,
 		BidAmount: amount,
 	})
-
 	if err != nil {
 		return pgstore.Bid{}, err
 	}
