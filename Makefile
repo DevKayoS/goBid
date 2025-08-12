@@ -80,19 +80,20 @@ check-db:
   		--query "SecurityGroups[*].IpPermissions"
 
 deploy:
-	@ if aws apprunner list-services  --query "ServiceSummaryList[?ServiceName=='$(APP_NAME)']" --output text | grep -q '$(APP_NAME)'; then \
+	@ if aws apprunner list-services --region $(REGION) \
+		--query "ServiceSummaryList[?ServiceName=='$(APP_NAME)']" --output text | grep -q '$(APP_NAME)'; then \
 		echo "Service '$(APP_NAME)' already exists. Updating..."; \
-		SERVICE_ARN=$$(aws apprunner list-services  --query "ServiceSummaryList[?ServiceName=='$(APP_NAME)'].ServiceArn" --output text); \
+		SERVICE_ARN=$$(aws apprunner list-services --region $(REGION) \
+			--query "ServiceSummaryList[?ServiceName=='$(APP_NAME)'].ServiceArn" --output text); \
 		aws apprunner update-service \
 			--service-arn $$SERVICE_ARN \
 			--source-configuration file://apprunner-config.json \
 			--region $(REGION); \
 	else \
-		echo "Service '$(APP_NAME)' does not exists. Creating,,,"; \
+		echo "Service '$(APP_NAME)' does not exists. Creating..."; \
 		aws apprunner create-service \
 			--service-name $(APP_NAME) \
 			--source-configuration file://apprunner-config.json \
 			--region $(REGION); \
 	fi
-
 
