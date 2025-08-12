@@ -90,7 +90,7 @@ deploy:
 	else \
 		echo "Service '$(APP_NAME)' does not exists. Creating,,,"; \
 		aws apprunner create-service \
-			--service-arn $$SERVICE_ARN \
+			--service-name $(APP_NAME) \
 			--source-configuration file://apprunner-config.json \
 			--region $(REGION); \
 	fi
