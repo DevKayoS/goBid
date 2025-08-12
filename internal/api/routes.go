@@ -22,7 +22,7 @@ func (api *Api) BindRoutes() {
 
 	// api.Router.Use(csrfMiddleware)
 
-	api.Router.Get("/helth", func(w http.ResponseWriter, r *http.Request) {
+	api.Router.Get("/health", func(w http.ResponseWriter, r *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		w.Write([]byte("OK"))
 	})
@@ -49,7 +49,6 @@ func (api *Api) BindRoutes() {
 					r.Get("/ws/subscriber/{product_Id}", api.handleSubscribeUserToAuction)
 				})
 			})
-
 		})
 	})
 }
