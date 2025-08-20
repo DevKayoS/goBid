@@ -12,7 +12,6 @@ import (
 
 func (api *Api) handleCreateProduct(w http.ResponseWriter, r *http.Request) {
 	data, problems, err := utils.DecodeValidJson[product.CreateProductRequest](r)
-
 	if err != nil {
 		utils.EncodeJson(w, r, http.StatusUnprocessableEntity, problems)
 		return
@@ -35,7 +34,6 @@ func (api *Api) handleCreateProduct(w http.ResponseWriter, r *http.Request) {
 		data.Baseprice,
 		data.AuctionEnd,
 	)
-
 	if err != nil {
 		utils.EncodeJson(w, r, http.StatusInternalServerError, map[string]any{
 			"error": "failed to create product auction try again later",
@@ -43,7 +41,8 @@ func (api *Api) handleCreateProduct(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	ctx, _ := context.WithDeadline(context.Background(), data.AuctionEnd)
+	ctx, cancel := context.WithDeadline(context.Background(), data.AuctionEnd)
+	defer cancel()
 	auctionRoom := services.NewAuctionRoom(ctx, api.BidService, productId)
 
 	go auctionRoom.Run()
@@ -60,7 +59,6 @@ func (api *Api) handleCreateProduct(w http.ResponseWriter, r *http.Request) {
 
 func (api *Api) handleListAvailableProduct(w http.ResponseWriter, r *http.Request) {
 	products, err := api.ProductService.ListAvailableProducts(r.Context())
-
 	if err != nil {
 		utils.EncodeJson(w, r, http.StatusInternalServerError, map[string]any{
 			"error": "unexpected error, try again later",
@@ -72,5 +70,4 @@ func (api *Api) handleListAvailableProduct(w http.ResponseWriter, r *http.Reques
 		"msg":  "generated product list with successfuly",
 		"data": products,
 	})
-
 }
