@@ -42,7 +42,7 @@ jobs:
           go-version: 1.23
 
       - name: Rodar testes
-        run: go teste ./...
+        run: go test ./...
 
   coverage:
     runs-on: ubuntu-latest
