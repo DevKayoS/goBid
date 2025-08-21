@@ -46,7 +46,7 @@ jobs:
 
   coverage:
     runs-on: ubuntu-latest
-    neds: [test]
+    needs: [test]
     steps:
       - uses: actions/checkout@v3
       - uses: actions/setup-go@v4
